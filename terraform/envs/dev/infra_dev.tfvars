@@ -30,7 +30,7 @@ vnet_details = [
   },
   {
     instace = "03"
-    location = "westuss"
+    location = "westus"
     subnet_address_space = [ "10.30.1.0/24" ]
     subnet_name = "subnet"
     vnet_address_space = [ "10.30.0.0/16" ]
