@@ -28,6 +28,6 @@ resource "azurerm_subnet" "vm_subnet_01" {
     
     name                 = "${each.value.subnet_name}-${var.environment}-${var.project}-${each.value.location}-${each.value.instace}"
     resource_group_name  = azurerm_resource_group.vm_rg_01.name
-    virtual_network_name = azurerm_virtual_network.vm_vnet_01.name
+    virtual_network_name = azurerm_virtual_network.vm_vnet_01[each.key].name
     address_prefixes     = each.value.subnet_address_space
 }
