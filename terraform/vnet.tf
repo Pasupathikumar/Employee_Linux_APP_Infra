@@ -14,7 +14,7 @@ locals {
 }
 
 resource "azurerm_virtual_network" "vm_vnet_01" {
-    for_each = { for vnet in local.flatten_vnet_details : "${vnet.vnet_name}-${vnet.instace}" => vnet }
+    for_each = { for vnet in local.flatten_vnet_details : "${vnet.vnet_name}-${vnet.location}-${vnet.instace}" => vnet }
 
     name                = "${each.value.vnet_name}-${var.environment}-${var.project}-${each.value.location}-${each.value.instace}"
     address_space       = each.value.vnet_address_space
@@ -24,10 +24,10 @@ resource "azurerm_virtual_network" "vm_vnet_01" {
 }
 
 resource "azurerm_subnet" "vm_subnet_01" {
-    for_each = { for vnet in local.flatten_vnet_details : "${vnet.subnet_name}-${vnet.instace}" => vnet }
+    for_each = { for vnet in local.flatten_vnet_details : "${vnet.subnet_name}-${vnet.location}-${vnet.instace}" => vnet }
     
     name                 = "${each.value.subnet_name}-${var.environment}-${var.project}-${each.value.location}-${each.value.instace}"
     resource_group_name  = azurerm_resource_group.vm_rg_01.name
-    virtual_network_name = azurerm_virtual_network.vm_vnet_01[each.key].name
+    virtual_network_name = azurerm_virtual_network.vm_vnet_01["${each.value.vnet_name}-${var.environment}-${var.project}-${each.value.location}-${each.value.instace}"].name
     address_prefixes     = each.value.subnet_address_space
 }
