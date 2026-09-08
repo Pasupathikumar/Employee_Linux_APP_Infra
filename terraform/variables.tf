@@ -40,7 +40,7 @@ variable "vnet_details" {
     type        = list(object({
         vnet_name = string
         subnet_name = string
-        instace = string
+        instance = string
         location = string
         vnet_address_space = list(string)
         subnet_address_space = list(string)
