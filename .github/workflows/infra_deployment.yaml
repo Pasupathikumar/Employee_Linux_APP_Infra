@@ -26,7 +26,7 @@ jobs:
     tf_plan:
         runs-on: ubuntu-latest
         environment:
-            name: development
+            name: Development
         
         steps:
             - name: Checkout repository
@@ -79,7 +79,7 @@ jobs:
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop' && needs.tf_plan.result == 'success'
         runs-on: ubuntu-latest
         environment:
-            name: development
+            name: Development
         steps:
             - name: Azure Login
               uses: azure/login@v2
