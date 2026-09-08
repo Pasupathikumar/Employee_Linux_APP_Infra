@@ -26,11 +26,6 @@ variable "resource_group_name" {
 variable "tags" {
     type        = map(string)
     description = "Tags to be applied to resources"
-    default     = {
-        "Project"     = var.project
-        "Environment" = var.environment
-        "Instance"    = var.instance
-    }
 }
 
 variable "resource_group_rbac" {
