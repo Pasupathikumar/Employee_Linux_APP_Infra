@@ -14,7 +14,7 @@ locals {
 }
 
 resource "azurerm_virtual_network" "vm_vnet_01" {
-    for_each = { for vnet in local.flatten_vnet_details : "${vnet.vnet_name}-${var.environment}-${var.project}-${each.value.location}-${each.value.instace}" => vnet }
+    for_each = { for vnet in local.flatten_vnet_details : "${vnet.vnet_name}-${var.environment}-${var.project}-${vnet.location}-${vnet.instace}" => vnet }
 
     name                = "${each.value.vnet_name}-${var.environment}-${var.project}-${each.value.location}-${each.value.instace}"
     address_space       = each.value.vnet_address_space
