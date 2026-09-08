@@ -18,7 +18,7 @@ env:
     STORAGE_CONTAINER: employee-api-infra
     RESOURCE_GROUP: rg-terraform-01
     TF_KEY: employee-api-infra.tfstate
-    TF_VARS: terraform/envs/dev/infra_dev.tfvars
+    TF_VARS: envs/dev/infra_dev.tfvars
     ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     TF_FILES_LOCATION: ${{ github.workspace }}/terraform
     TF_VERSION: latest
@@ -27,7 +27,9 @@ jobs:
         runs-on: ubuntu-latest
         environment:
             name: Development
-        
+        defaults:
+            run:
+                working-directory: ${{ env.TF_FILES_LOCATION }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v3
@@ -80,13 +82,16 @@ jobs:
         runs-on: ubuntu-latest
         environment:
             name: Development
+        defaults:
+            run:
+                working-directory: ${{ env.TF_FILES_LOCATION }}
         steps:
             - name: Azure Login
               uses: azure/login@v2
               with:
-                client-id: ${{ secrets.arm_client_id }}
-                tenant-id: ${{ secrets.arm_tenant_id }}
-                subscription-id: ${{ secrets.arm_subscription_id }}
+                client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
             - name: Download Artifact 
               uses: actions/download-artifact@v4.1.6
