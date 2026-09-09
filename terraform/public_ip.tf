@@ -3,7 +3,6 @@
 # =========================================================
 
 resource "azurerm_public_ip" "vm_public_ip_01" {
-
   for_each = local.public_ip_details
 
   name = each.key

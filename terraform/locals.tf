@@ -14,12 +14,15 @@ locals {
 
     "${vnet.vnet_name}-${var.environment}-${var.project}-${vnet.location}-${vnet.instance}" => {
 
-      vnet_name          = vnet.vnet_name
-      vnet_deploy_flag   = vnet.vnet_deploy_flag
-      location           = vnet.location
-      instance           = vnet.instance
-      vnet_address_space = vnet.vnet_address_space
+      vnet_name = vnet.vnet_name
 
+      vnet_deploy_flag = vnet.vnet_deploy_flag
+
+      location = vnet.location
+
+      instance = vnet.instance
+
+      vnet_address_space = vnet.vnet_address_space
     }
 
     if vnet.vnet_deploy_flag
@@ -37,17 +40,22 @@ locals {
       for subnet in vnet.subnet_details : {
 
         vnet_name = vnet.vnet_name
-        location  = vnet.location
-        instance  = vnet.instance
 
-        subnet_name          = subnet.subnet_name
-        subnet_deploy_flag   = subnet.subnet_deploy_flag
+        location = vnet.location
+
+        instance = vnet.instance
+
+        subnet_name = subnet.subnet_name
+
+        subnet_deploy_flag = subnet.subnet_deploy_flag
+
         subnet_address_space = subnet.subnet_address_space
 
+        service_endpoints = subnet.service_endpoints
+
+        delegated_details = subnet.delegated_details
       }
-
     ]
-
   ])
 
 
@@ -58,6 +66,146 @@ locals {
     "${subnet.subnet_name}-${var.environment}-${var.project}-${subnet.location}-${subnet.instance}" => subnet
 
     if subnet.subnet_deploy_flag
+  }
+
+
+  # ======================================================
+  # PRIVATE DNS ZONES
+  # ======================================================
+
+  dns_zone_list = flatten([
+
+    for vnet in var.vnet_details : [
+
+      for subnet in vnet.subnet_details : [
+
+        for dns in subnet.dns_zone_details : {
+
+          dns_deploy_flag = dns.dns_deploy_flag
+
+          dns_zone_name = dns.dns_zone_name
+
+          dns_zone_link_name = dns.dns_zone_link_name
+
+          subnet_name = subnet.subnet_name
+
+          vnet_name = vnet.vnet_name
+
+          location = vnet.location
+
+          instance = vnet.instance
+        }
+      ]
+    ]
+  ])
+
+
+  dns_zone_details = {
+
+    for dns in local.dns_zone_list :
+
+    "${dns.dns_zone_name}-${var.environment}-${var.project}-${dns.location}-${dns.instance}" => dns
+
+    if dns.dns_deploy_flag
+  }
+
+
+  # ======================================================
+  # POSTGRESQL SERVERS
+  # ======================================================
+
+  postgresql_server_list = flatten([
+
+    for vnet in var.vnet_details : [
+
+      for subnet in vnet.subnet_details : [
+
+        for postgres in subnet.postgresql_server_details : {
+
+          postgresql_deploy_flag = postgres.postgresql_deploy_flag
+
+          postgresql_server_name = postgres.postgresql_server_name
+
+          postgresql_version = postgres.postgresql_version
+
+          postgresql_sku_name = postgres.postgresql_sku_name
+
+          postgresql_storage_tier = postgres.postgresql_storage_tier
+
+          postgresql_storage_mb = postgres.postgresql_storage_mb
+
+          postgresql_admin_username = postgres.postgresql_admin_username
+
+          postgresql_zone = postgres.postgresql_zone
+
+          postgresql_public_access = postgres.postgresql_public_access
+
+          dns_zone_name = postgres.dns_zone_name
+
+          subnet_name = subnet.subnet_name
+
+          vnet_name = vnet.vnet_name
+
+          location = vnet.location
+
+          instance = vnet.instance
+        }
+      ]
+    ]
+  ])
+
+
+  postgresql_server_details = {
+
+    for postgres in local.postgresql_server_list :
+
+    "${postgres.postgresql_server_name}-${var.environment}-${var.project}-${postgres.location}-${postgres.instance}" => postgres
+
+    if postgres.postgresql_deploy_flag
+  }
+
+
+  # ======================================================
+  # POSTGRESQL DATABASES
+  # ======================================================
+
+  postgresql_database_list = flatten([
+
+    for vnet in var.vnet_details : [
+
+      for subnet in vnet.subnet_details : [
+
+        for postgres in subnet.postgresql_server_details : [
+
+          for database in postgres.postgresql_database_details : {
+
+            postgresql_database_deploy_flag = database.postgresql_database_deploy_flag
+
+            postgresql_database_name = database.postgresql_database_name
+
+            collation_name = database.collation_name
+
+            charset_name = database.charset_name
+
+            postgresql_server_name = postgres.postgresql_server_name
+
+            location = vnet.location
+
+            instance = vnet.instance
+          }
+        ]
+      ]
+    ]
+  ])
+
+
+  postgresql_database_details = {
+
+    for database in local.postgresql_database_list :
+
+    "${database.postgresql_server_name}-${database.postgresql_database_name}-${var.environment}-${var.project}-${database.location}-${database.instance}" => database
+
+    if database.postgresql_database_deploy_flag
   }
 
 
@@ -73,23 +221,24 @@ locals {
 
         for public_ip in subnet.public_ip_details : {
 
-          public_ip_name        = public_ip.public_ip_name
+          public_ip_name = public_ip.public_ip_name
+
           public_ip_deploy_flag = public_ip.public_ip_deploy_flag
-          ip_allocation_method  = public_ip.ip_allocation_method
-          sku                   = public_ip.sku
+
+          ip_allocation_method = public_ip.ip_allocation_method
+
+          sku = public_ip.sku
 
           subnet_name = subnet.subnet_name
-          vnet_name   = vnet.vnet_name
+
+          vnet_name = vnet.vnet_name
 
           location = vnet.location
+
           instance = vnet.instance
-
         }
-
       ]
-
     ]
-
   ])
 
 
@@ -115,21 +264,20 @@ locals {
 
         for nsg in subnet.network_security_group_details : {
 
-          nsg_name        = nsg.nsg_name
+          nsg_name = nsg.nsg_name
+
           nsg_deploy_flag = nsg.nsg_deploy_flag
 
           subnet_name = subnet.subnet_name
-          vnet_name   = vnet.vnet_name
+
+          vnet_name = vnet.vnet_name
 
           location = vnet.location
+
           instance = vnet.instance
-
         }
-
       ]
-
     ]
-
   ])
 
 
@@ -160,29 +308,32 @@ locals {
             firewall_rule_deploy_flag = rule.firewall_rule_deploy_flag
 
             rule_name = rule.rule_name
-            priority  = rule.priority
-            direction = rule.direction
-            access    = rule.access
-            protocol  = rule.protocol
 
-            source_port_range          = rule.source_port_range
-            destination_port_range     = rule.destination_port_range
-            source_address_prefix      = rule.source_address_prefix
+            priority = rule.priority
+
+            direction = rule.direction
+
+            access = rule.access
+
+            protocol = rule.protocol
+
+            source_port_range = rule.source_port_range
+
+            destination_port_range = rule.destination_port_range
+
+            source_address_prefix = rule.source_address_prefix
+
             destination_address_prefix = rule.destination_address_prefix
 
             nsg_name = nsg.nsg_name
 
             location = vnet.location
+
             instance = vnet.instance
-
           }
-
         ]
-
       ]
-
     ]
-
   ])
 
 
@@ -208,26 +359,26 @@ locals {
 
         for nic in subnet.network_interface_details : {
 
-          nic_name        = nic.nic_name
+          nic_name = nic.nic_name
+
           nic_deploy_flag = nic.nic_deploy_flag
 
-          private_ip_address = nic.private_ip_address
+          private_ip_allocation_method = nic.private_ip_allocation_method
 
           public_ip_name = nic.public_ip_name
-          nsg_name       = nic.nsg_name
+
+          nsg_name = nic.nsg_name
 
           subnet_name = subnet.subnet_name
-          vnet_name   = vnet.vnet_name
+
+          vnet_name = vnet.vnet_name
 
           location = vnet.location
+
           instance = vnet.instance
-
         }
-
       ]
-
     ]
-
   ])
 
 
@@ -256,6 +407,7 @@ locals {
           vm_deploy_flag = vm.vm_deploy_flag
 
           vm_name = vm.vm_name
+
           vm_size = vm.vm_size
 
           admin_username = vm.admin_username
@@ -267,17 +419,15 @@ locals {
           source_image_reference = vm.source_image_reference
 
           subnet_name = subnet.subnet_name
-          vnet_name   = vnet.vnet_name
+
+          vnet_name = vnet.vnet_name
 
           location = vnet.location
+
           instance = vnet.instance
-
         }
-
       ]
-
     ]
-
   ])
 
 
@@ -289,5 +439,4 @@ locals {
 
     if vm.vm_deploy_flag
   }
-
 }
