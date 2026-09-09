@@ -1,0 +1,121 @@
+name: Linux Virtual Machine Infrastructure Deployment
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+    branches:
+      - develop
+
+permissions:
+  contents: write
+  id-token: write
+
+env:
+    STORAGE_ACCOUNT: tfstterraform01
+    STORAGE_CONTAINER: employee-api-infra
+    RESOURCE_GROUP: rg-terraform-01
+    TF_KEY: employee-api-infra.tfstate
+    TF_VARS: envs/dev/infra_dev.tfvars
+    ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    TF_FILES_LOCATION: ${{ github.workspace }}/terraform
+    TF_VERSION: latest
+jobs:
+    tf_plan:
+        runs-on: ubuntu-latest
+        environment:
+            name: Development
+        defaults:
+            run:
+                working-directory: ${{ env.TF_FILES_LOCATION }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v2
+              with:
+                terraform_version: latest
+
+            - name: Azure Login
+              uses: azure/login@v2
+              with:
+                client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            
+            - name: Terraform Init
+              id: init
+              run: |
+                terraform init -upgrade --backend-config="storage_account_name=$STORAGE_ACCOUNT" --backend-config="container_name=$STORAGE_CONTAINER" --backend-config="resource_group_name=$RESOURCE_GROUP" --backend-config="key=$TF_KEY" --backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
+            
+            - name: Terraform Validate
+              id: validate
+              run: |
+                terraform validate
+            
+            - name: Terraform Plan
+              id: plan
+              run: |
+                terraform plan --var-file=$TF_VARS --out=plan.tfplan --var "linux_vm_password=${{ secrets.LINUX_VM_PASSWORD }}" --var "postgresql_admin_password=${{ secrets.LINUX_VM_PASSWORD }}"
+              continue-on-error: true
+            
+            - name: Plan Failed
+              if: steps.plan.outcome == 'failure'
+              run: exit 1
+            
+            - name: Create Artifact file
+              run: zip -r ${{ env.TF_KEY }}.zip ./*
+            
+            - name: Upload Artifact file
+              uses: actions/upload-artifact@v4.3.3
+              with:
+                name: "${{ env.TF_KEY }}"
+                path: "${{  env.TF_FILES_LOCATION }}/${{ env.TF_KEY }}.zip"
+                retention-days: 5
+
+    tf_deploy:
+        needs: tf_plan
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop' && needs.tf_plan.result == 'success'
+        runs-on: ubuntu-latest
+        environment:
+            name: Development
+        defaults:
+            run:
+                working-directory: ${{ env.TF_FILES_LOCATION }}
+        steps:
+            - name: Azure Login
+              uses: azure/login@v2
+              with:
+                client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+            - name: Download Artifact 
+              uses: actions/download-artifact@v4.1.6
+              with:
+                name: ${{ env.TF_KEY }}
+                path: ${{ env.TF_FILES_LOCATION }}
+            
+            - name: Unzip TF Plan artifact
+              run: |
+                unzip ${{ env.TF_KEY }}.zip
+            
+            - name: Terraform setup
+              uses: hashicorp/setup-terraform@v3
+              with:
+                terraform_version: ${{ env.TF_VERSION }}
+            
+            - name: Terraform Init
+              id: init
+              run: |
+                terraform init -upgrade --backend-config="storage_account_name=$STORAGE_ACCOUNT" --backend-config="container_name=$STORAGE_CONTAINER" --backend-config="resource_group_name=$RESOURCE_GROUP" --backend-config="key=$TF_KEY" --backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
+            
+            - name: Terraform Apply
+              id: apply
+              run: |
+                terraform apply plan.tfplan
+            
+
