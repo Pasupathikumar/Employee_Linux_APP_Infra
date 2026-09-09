@@ -291,7 +291,7 @@ vnet_details = [
     vnet_name          = "vnet-admin"
     vnet_address_space = ["10.30.0.0/16"]
     instance           = "03"
-    location           = "southindia"
+    location           = "centralindia"
 
     subnet_details = [
       {
@@ -404,7 +404,7 @@ vnet_details = [
     vnet_name          = "vnet-db"
     vnet_address_space = ["10.40.0.0/16"]
     instance           = "04"
-    location           = "southindia"
+    location           = "centralindia"
 
     subnet_details = [
       {
