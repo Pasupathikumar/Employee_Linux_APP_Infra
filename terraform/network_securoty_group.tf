@@ -1,7 +1,3 @@
-# =========================================================
-# Network Security Group
-# =========================================================
-
 resource "azurerm_network_security_group" "vm_nsg_01" {
   for_each = local.nsg_details
 
@@ -11,12 +7,9 @@ resource "azurerm_network_security_group" "vm_nsg_01" {
   resource_group_name = azurerm_resource_group.vm_rg_01.name
 
   tags = var.tags
+
+  depends_on = [ azurerm_resource_group.vm_rg_01 ]
 }
-
-
-# =========================================================
-# Network Security Rules
-# =========================================================
 
 resource "azurerm_network_security_rule" "vm_nsg_rule_01" {
   for_each = local.firewall_rule_details
@@ -39,6 +32,8 @@ resource "azurerm_network_security_rule" "vm_nsg_rule_01" {
   network_security_group_name = azurerm_network_security_group.vm_nsg_01[
     "${each.value.nsg_name}-${var.environment}-${var.project}-${each.value.location}-${each.value.instance}"
   ].name
+
+  depends_on = [ azurerm_network_security_group.vm_nsg_01 ]
 }
 
 

@@ -10,10 +10,6 @@ locals {
 
 }
 
-# =========================================================
-# Resource Group
-# =========================================================
-
 resource "azurerm_resource_group" "vm_rg_01" {
   name = "${var.resource_group_name}-${var.environment}-${var.project}-${var.location}-${var.instance}"
   location = var.location

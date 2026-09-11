@@ -1,7 +1,3 @@
-# =========================================================
-# Public IP
-# =========================================================
-
 resource "azurerm_public_ip" "vm_public_ip_01" {
   for_each = local.public_ip_details
 
@@ -14,4 +10,8 @@ resource "azurerm_public_ip" "vm_public_ip_01" {
   sku               = each.value.sku
 
   tags = var.tags
+
+  depends_on = [ 
+    azurerm_linux_virtual_machine.vm_linux_01
+  ]
 }

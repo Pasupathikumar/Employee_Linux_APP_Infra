@@ -439,4 +439,38 @@ locals {
 
     if vm.vm_deploy_flag
   }
+
+  # ======================================================
+# VNET PEERING
+# ======================================================
+
+vnet_peering_list = flatten([
+  for vnet in var.vnet_details : [
+    for peering in vnet.vnet_peering_details : {
+      peering_deploy_flag = peering.peering_deploy_flag
+      peering_name        = peering.peering_name
+
+      source_vnet_name     = vnet.vnet_name
+      source_location      = vnet.location
+      source_instance      = vnet.instance
+
+      remote_vnet_name     = peering.remote_vnet_name
+      remote_vnet_location = peering.remote_vnet_location
+      remote_vnet_instance = peering.remote_vnet_instance
+
+      allow_virtual_network_access = peering.allow_virtual_network_access
+      allow_forwarded_traffic      = peering.allow_forwarded_traffic
+      allow_gateway_transit        = peering.allow_gateway_transit
+      use_remote_gateways          = peering.use_remote_gateways
+    }
+  ]
+])
+
+vnet_peering_details = {
+  for peering in local.vnet_peering_list :
+
+  "${peering.peering_name}-${var.environment}-${var.project}-${peering.source_location}-${peering.source_instance}" => peering
+
+  if peering.peering_deploy_flag
+}
 }
