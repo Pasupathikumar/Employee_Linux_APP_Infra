@@ -1,7 +1,3 @@
-# =========================================================
-# Network Security Group
-# =========================================================
-
 resource "azurerm_network_security_group" "vm_nsg_01" {
   for_each = local.nsg_details
 
@@ -12,11 +8,6 @@ resource "azurerm_network_security_group" "vm_nsg_01" {
 
   tags = var.tags
 }
-
-
-# =========================================================
-# Network Security Rules
-# =========================================================
 
 resource "azurerm_network_security_rule" "vm_nsg_rule_01" {
   for_each = local.firewall_rule_details

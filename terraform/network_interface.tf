@@ -1,7 +1,3 @@
-# =========================================================
-# Network Interface
-# =========================================================
-
 resource "azurerm_network_interface" "vm_nic_01" {
   for_each = local.nic_details
 
@@ -31,11 +27,6 @@ resource "azurerm_network_interface" "vm_nic_01" {
 
   tags = var.tags
 }
-
-
-# =========================================================
-# NIC -> NSG Association
-# =========================================================
 
 resource "azurerm_network_interface_security_group_association" "vm_nic_nsg_association_01" {
   for_each = {
