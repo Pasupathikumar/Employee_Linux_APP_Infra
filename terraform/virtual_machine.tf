@@ -33,8 +33,4 @@ resource "azurerm_linux_virtual_machine" "vm_linux_01" {
   }
 
   tags = var.tags
-
-  depends_on = [
-    azurerm_network_interface.vm_nic_01
-  ]
 }

@@ -16,8 +16,4 @@ resource "azurerm_virtual_network_peering" "vm_vnet_peering_01" {
   allow_forwarded_traffic = each.value.allow_forwarded_traffic
   allow_gateway_transit = each.value.allow_gateway_transit
   use_remote_gateways = each.value.use_remote_gateways
-
-  depends_on = [
-    azurerm_virtual_network.vm_vnet_01
-  ]
 }

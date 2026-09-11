@@ -26,8 +26,6 @@ resource "azurerm_network_interface" "vm_nic_01" {
   }
 
   tags = var.tags
-
-  depends_on = [ azurerm_subnet.vm_subnet_01, azurerm_public_ip.vm_public_ip_01 ]
 }
 
 resource "azurerm_network_interface_security_group_association" "vm_nic_nsg_association_01" {
@@ -44,6 +42,4 @@ resource "azurerm_network_interface_security_group_association" "vm_nic_nsg_asso
   network_security_group_id = azurerm_network_security_group.vm_nsg_01[
     "${each.value.nsg_name}-${var.environment}-${var.project}-${each.value.location}-${each.value.instance}"
   ].id
-
-  depends_on = [ azurerm_network_interface.vm_nic_01, azurerm_network_security_group.vm_nsg_01 ]
 }

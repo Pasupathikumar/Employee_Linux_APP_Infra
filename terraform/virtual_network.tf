@@ -7,10 +7,6 @@ resource "azurerm_virtual_network" "vm_vnet_01" {
   address_space = each.value.vnet_address_space
 
   tags = var.tags
-
-  depends_on = [
-    azurerm_resource_group.vm_rg_01
-  ]
 }
 
 resource "azurerm_subnet" "vm_subnet_01" {
@@ -36,8 +32,4 @@ resource "azurerm_subnet" "vm_subnet_01" {
       }
     }
   }
-
-  depends_on = [
-    azurerm_virtual_network.vm_vnet_01
-  ]
 }

@@ -5,10 +5,6 @@ resource "azurerm_private_dns_zone" "postgresql_dns_zones" {
   resource_group_name = azurerm_resource_group.vm_rg_01.name
 
   tags = var.tags
-
-  depends_on = [
-    azurerm_virtual_network.vm_vnet_01
-  ]
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "postgresql_dns_zone_link" {
@@ -26,8 +22,4 @@ resource "azurerm_private_dns_zone_virtual_network_link" "postgresql_dns_zone_li
   ].id
 
   registration_enabled = false
-
-  depends_on = [ 
-    azurerm_linux_virtual_machine.vm_linux_01 
-  ]
 }

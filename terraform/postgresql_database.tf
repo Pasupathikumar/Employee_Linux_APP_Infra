@@ -1,5 +1,4 @@
 resource "azurerm_postgresql_flexible_server" "postgresql_server" {
-
   for_each = local.postgresql_server_details
 
   name = each.value.postgresql_server_name
@@ -31,10 +30,6 @@ resource "azurerm_postgresql_flexible_server" "postgresql_server" {
   }
 
   tags = var.tags
-
-  depends_on = [
-    azurerm_private_dns_zone_virtual_network_link.postgresql_dns_zone_link
-  ]
 }
 
 resource "azurerm_postgresql_flexible_server_database" "postgresql_database" {
@@ -48,6 +43,4 @@ resource "azurerm_postgresql_flexible_server_database" "postgresql_database" {
 
   charset = each.value.charset_name
   collation = each.value.collation_name
-
-  depends_on = [ azurerm_postgresql_flexible_server.postgresql_server ]
 }
