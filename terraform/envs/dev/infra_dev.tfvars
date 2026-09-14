@@ -18,13 +18,8 @@ tags = {
 
 resource_group_rbac = []
 
-# =========================================================
-# VIRTUAL NETWORK DETAILS
-# =========================================================
 vnet_details = [
-  # =======================================================
-  # VNET 01 - WEB SERVER
-  # =======================================================
+  # Vnet 01 - WEB SERVER
   {
     vnet_deploy_flag   = true
     vnet_name          = "vnet-web"
@@ -32,6 +27,24 @@ vnet_details = [
     instance           = "01"
     location           = "southindia"
 
+    vnet_peering_details = [
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-web-to-app"
+
+        remote_vnet_name     = "vnet-app"
+        remote_vnet_location = "southindia"
+        remote_vnet_instance = "02"
+      },
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-web-to-admin"
+
+        remote_vnet_name     = "vnet-admin"
+        remote_vnet_location = "centralindia"
+        remote_vnet_instance = "03"
+      }
+    ]
     subnet_details = [
       {
         subnet_deploy_flag   = true
@@ -46,18 +59,13 @@ vnet_details = [
 
         postgresql_server_details = []
 
-        # =================================================
-        # WEB NSG
-        # =================================================
         network_security_group_details = [
           {
             nsg_deploy_flag = true
             nsg_name        = "nsg-web"
 
             firewall_rules = [
-              # -------------------------------------------
-              # HTTP
-              # -------------------------------------------
+              # HTTP firewall rule              
               {
                 firewall_rule_deploy_flag  = true
                 rule_name                  = "allow-http"
@@ -70,11 +78,7 @@ vnet_details = [
                 source_address_prefix      = "*"
                 destination_address_prefix = "*"
               },
-
-              # -------------------------------------------
-              # HTTPS
-              # -------------------------------------------
-
+              # HTTPS firewall rule
               {
                 firewall_rule_deploy_flag  = true
                 rule_name                  = "allow-https"
@@ -87,11 +91,7 @@ vnet_details = [
                 source_address_prefix      = "*"
                 destination_address_prefix = "*"
               },
-
-              # -------------------------------------------
               # SSH from Admin subnet
-              # -------------------------------------------
-
               {
                 firewall_rule_deploy_flag  = true
                 rule_name                  = "allow-ssh-from-admin"
@@ -104,14 +104,10 @@ vnet_details = [
                 source_address_prefix      = "10.30.1.0/24"
                 destination_address_prefix = "*"
               }
-
             ]
           }
         ]
 
-        # =================================================
-        # WEB PUBLIC IP
-        # =================================================
         public_ip_details = [
           {
             public_ip_deploy_flag = true
@@ -121,9 +117,6 @@ vnet_details = [
           }
         ]
 
-        # =================================================
-        # WEB NIC
-        # =================================================
         network_interface_details = [
           {
             nic_deploy_flag = true
@@ -134,9 +127,6 @@ vnet_details = [
           }
         ]
 
-        # =================================================
-        # WEB LINUX VM
-        # =================================================
         linux_vm_details = [
           {
             vm_deploy_flag = true
@@ -163,16 +153,39 @@ vnet_details = [
     ]
   },
 
-  # =======================================================
-  # VNET 02 - APPLICATION SERVER
-  # =======================================================
+  # Vnet 02 - APPLICATION SERVER
   {
     vnet_deploy_flag   = true
     vnet_name          = "vnet-app"
     vnet_address_space = ["10.20.0.0/16"]
     instance           = "02"
     location           = "southindia"
+    vnet_peering_details = [
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-app-to-web"
 
+        remote_vnet_name     = "vnet-web"
+        remote_vnet_location = "southindia"
+        remote_vnet_instance = "01"
+      },
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-app-to-admin"
+
+        remote_vnet_name     = "vnet-admin"
+        remote_vnet_location = "centralindia"
+        remote_vnet_instance = "03"
+      },
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-app-to-db"
+
+        remote_vnet_name     = "vnet-db"
+        remote_vnet_location = "centralindia"
+        remote_vnet_instance = "04"
+      }
+    ]
     subnet_details = [
       {
         subnet_deploy_flag   = true
@@ -187,18 +200,13 @@ vnet_details = [
 
         postgresql_server_details = []
 
-        # =================================================
-        # APP NSG
-        # =================================================
         network_security_group_details = [
           {
             nsg_deploy_flag = true
             nsg_name        = "nsg-app"
 
             firewall_rules = [
-              # -------------------------------------------
-              # Application API from Web server
-              # -------------------------------------------
+              # Allow API traffic from Web subnet
               {
                 firewall_rule_deploy_flag  = true
                 rule_name                  = "allow-api-from-web"
@@ -212,9 +220,7 @@ vnet_details = [
                 destination_address_prefix = "*"
               },
 
-              # -------------------------------------------
-              # SSH from Admin subnet
-              # -------------------------------------------
+              # Allow SSH from Admin subnet
               {
                 firewall_rule_deploy_flag  = true
                 rule_name                  = "allow-ssh-from-admin"
@@ -231,32 +237,19 @@ vnet_details = [
           }
         ]
 
-        # =================================================
-        # APP PUBLIC IP
-        #
-        # No public IP required.
-        # =================================================
         public_ip_details = []
 
-        # =================================================
-        # APP NIC
-        # =================================================
         network_interface_details = [
           {
             nic_deploy_flag = true
             nic_name        = "nic-app"
 
             private_ip_allocation_method = "Dynamic"
-
             public_ip_name = null
-
             nsg_name = "nsg-app"
           }
         ]
 
-        # =================================================
-        # APP LINUX VM
-        # =================================================
         linux_vm_details = [
           {
             vm_deploy_flag = true
@@ -283,9 +276,7 @@ vnet_details = [
     ]
   },
 
-  # =======================================================
   # VNET 03 - ADMIN / MANAGEMENT SERVER
-  # =======================================================
   {
     vnet_deploy_flag   = true
     vnet_name          = "vnet-admin"
@@ -293,6 +284,32 @@ vnet_details = [
     instance           = "03"
     location           = "centralindia"
 
+    vnet_peering_details = [
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-admin-to-web"
+
+        remote_vnet_name     = "vnet-web"
+        remote_vnet_location = "southindia"
+        remote_vnet_instance = "01"
+      },
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-admin-to-app"
+
+        remote_vnet_name     = "vnet-app"
+        remote_vnet_location = "southindia"
+        remote_vnet_instance = "02"
+      },
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-admin-to-db"
+
+        remote_vnet_name     = "vnet-db"
+        remote_vnet_location = "centralindia"
+        remote_vnet_instance = "04"
+      }
+    ]
     subnet_details = [
       {
         subnet_deploy_flag   = true
@@ -307,21 +324,13 @@ vnet_details = [
 
         postgresql_server_details = []
 
-        # =================================================
-        # ADMIN NSG
-        # =================================================
         network_security_group_details = [
           {
             nsg_deploy_flag = true
             nsg_name        = "nsg-admin"
 
             firewall_rules = [
-              # -------------------------------------------
-              # SSH to Admin VM
-              #
-              # For learning/testing only.
-              # Replace "*" with your public IP later.
-              # -------------------------------------------
+              # Allow SSH from Admin subnet to Admin VM
               {
                 firewall_rule_deploy_flag  = true
                 rule_name                  = "allow-admin-ssh"
@@ -338,9 +347,6 @@ vnet_details = [
           }
         ]
 
-        # =================================================
-        # ADMIN PUBLIC IP
-        # =================================================
         public_ip_details = [
           {
             public_ip_deploy_flag = true
@@ -350,9 +356,6 @@ vnet_details = [
           }
         ]
 
-        # =================================================
-        # ADMIN NIC
-        # =================================================
         network_interface_details = [
           {
             nic_deploy_flag = true
@@ -366,9 +369,6 @@ vnet_details = [
           }
         ]
 
-        # =================================================
-        # ADMIN LINUX VM
-        # =================================================
         linux_vm_details = [
           {
             vm_deploy_flag = true
@@ -395,16 +395,32 @@ vnet_details = [
     ]
   },
 
-  # =======================================================
   # VNET 04 - DATABASE
-  # Azure Database for PostgreSQL Flexible Server
-  # =======================================================
   {
     vnet_deploy_flag   = true
     vnet_name          = "vnet-db"
     vnet_address_space = ["10.40.0.0/16"]
     instance           = "04"
     location           = "centralindia"
+
+    vnet_peering_details = [
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-db-to-app"
+
+        remote_vnet_name     = "vnet-app"
+        remote_vnet_location = "southindia"
+        remote_vnet_instance = "02"
+      },
+      {
+        peering_deploy_flag = true
+        peering_name        = "peer-db-to-admin"
+
+        remote_vnet_name     = "vnet-admin"
+        remote_vnet_location = "centralindia"
+        remote_vnet_instance = "03"
+      }
+    ]
 
     subnet_details = [
       {
@@ -414,16 +430,7 @@ vnet_details = [
           "10.40.1.0/24"
         ]
 
-        # =================================================
-        # SERVICE ENDPOINTS
-        #
-        # Not required for PostgreSQL delegated subnet.
-        # =================================================
         service_endpoints = []
-
-        # =================================================
-        # POSTGRESQL SUBNET DELEGATION
-        # =================================================
 
         delegated_details = [
           {
@@ -436,10 +443,6 @@ vnet_details = [
             }
           }
         ]
-
-        # =================================================
-        # PRIVATE DNS ZONE
-        # =================================================
         dns_zone_details = [
           {
             dns_deploy_flag = true
@@ -448,10 +451,6 @@ vnet_details = [
           }
         ]
 
-
-        # =================================================
-        # POSTGRESQL FLEXIBLE SERVER
-        # =================================================
         postgresql_server_details = [
           {
             postgresql_deploy_flag = true
@@ -465,10 +464,6 @@ vnet_details = [
             postgresql_public_access = false
             dns_zone_name = "employee-api.private.postgres.database.azure.com"
 
-
-            # =============================================
-            # EMPLOYEE DATABASE
-            # =============================================
             postgresql_database_details = [
               {
                 postgresql_database_deploy_flag = true
@@ -480,40 +475,11 @@ vnet_details = [
           }
         ]
 
-
-        # =================================================
-        # NSG
-        #
-        # No NIC-based NSG required because PostgreSQL
-        # Flexible Server is managed by Azure.
-        # =================================================
-
         network_security_group_details = []
-
-
-        # =================================================
-        # PUBLIC IP
-        #
-        # PostgreSQL is private only.
-        # =================================================
 
         public_ip_details = []
 
-
-        # =================================================
-        # NETWORK INTERFACE
-        #
-        # Flexible Server does not require our NIC resource.
-        # =================================================
-
         network_interface_details = []
-
-
-        # =================================================
-        # LINUX VM
-        #
-        # No DB VM because PostgreSQL is Azure managed.
-        # =================================================
 
         linux_vm_details = []
       }
