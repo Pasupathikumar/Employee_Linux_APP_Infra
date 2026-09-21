@@ -1,5 +1,5 @@
 resource "azurerm_private_dns_zone" "postgresql_dns_zones" {
-  for_each = local.dns_zone_details
+  for_each = local.dns_zone_link_details
 
   name = each.value.dns_zone_name
   resource_group_name = azurerm_resource_group.vm_rg_01.name
@@ -8,17 +8,19 @@ resource "azurerm_private_dns_zone" "postgresql_dns_zones" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "postgresql_dns_zone_link" {
-  for_each = local.dns_zone_details
 
-  name = each.value.dns_zone_link_name
+  for_each = local.dns_zone_link_details
+
+  name = each.value.link_name
+
   resource_group_name = azurerm_resource_group.vm_rg_01.name
 
   private_dns_zone_name = azurerm_private_dns_zone.postgresql_dns_zones[
-    each.key
+    "${each.value.dns_zone_name}-${var.environment}-${var.project}-${each.value.dns_location}-${each.value.dns_instance}"
   ].name
 
   virtual_network_id = azurerm_virtual_network.vm_vnet_01[
-    "${each.value.vnet_name}-${var.environment}-${var.project}-${each.value.location}-${each.value.instance}"
+    "${each.value.vnet_name}-${var.environment}-${var.project}-${each.value.vnet_location}-${each.value.vnet_instance}"
   ].id
 
   registration_enabled = false

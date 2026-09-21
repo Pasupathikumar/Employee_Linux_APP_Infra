@@ -89,7 +89,12 @@ variable "vnet_details" {
       dns_zone_details = optional(list(object({
         dns_deploy_flag   = bool
         dns_zone_name     = string
-        dns_zone_link_name = string
+        vnet_links = list(object({
+          link_name = string
+          vnet_name = string
+          vnet_location = string
+          vnet_instance = string
+        }))
       })), [])
       
       # PostgreSQL Flexible Server
