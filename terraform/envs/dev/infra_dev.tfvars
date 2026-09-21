@@ -448,6 +448,11 @@ vnet_details = [
             dns_deploy_flag = true
             dns_zone_name = "employee-api.private.postgres.database.azure.com"
             dns_zone_link_name = "employee-api-postgresql-db-vnet-link"
+          },
+          {
+            dns_deploy_flag = true
+            dns_zone_name = "employee-api.private.postgres.database.azure.com"
+            dns_zone_link_name = "employee-api-postgresql-app-vnet-link"
           }
         ]
 
