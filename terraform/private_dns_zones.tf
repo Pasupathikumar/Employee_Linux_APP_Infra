@@ -16,7 +16,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "postgresql_dns_zone_li
   resource_group_name = azurerm_resource_group.vm_rg_01.name
 
   private_dns_zone_name = azurerm_private_dns_zone.postgresql_dns_zones[
-    "${each.value.dns_zone_name}-${var.environment}-${var.project}-${each.value.dns_location}-${each.value.dns_instance}"
+    each.value.dns_zone_name
   ].name
 
   virtual_network_id = azurerm_virtual_network.vm_vnet_01[
