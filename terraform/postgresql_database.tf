@@ -16,7 +16,7 @@ resource "azurerm_postgresql_flexible_server" "postgresql_server" {
   ].id
 
   private_dns_zone_id = azurerm_private_dns_zone.postgresql_dns_zones[
-    each.value.dns_zone_name
+    "${each.value.dns_zone_name}"
   ].id
 
   public_network_access_enabled = each.value.postgresql_public_access

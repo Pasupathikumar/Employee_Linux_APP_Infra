@@ -33,6 +33,32 @@ locals {
     if subnet.subnet_deploy_flag
   }
 
+    # =========================================================
+  # PRIVATE DNS ZONES
+  # =========================================================
+
+  dns_zone_list = flatten([
+    for vnet in var.vnet_details : [
+      for subnet in vnet.subnet_details : [
+        for dns in subnet.dns_zone_details : {
+          dns_deploy_flag = dns.dns_deploy_flag
+          dns_zone_name   = dns.dns_zone_name
+        }
+      ]
+    ]
+  ])
+
+  dns_zone_details = {
+    for dns in local.dns_zone_list :
+    dns.dns_zone_name => dns
+    if dns.dns_deploy_flag
+  }
+
+
+  # =========================================================
+  # PRIVATE DNS ZONE VNET LINKS
+  # =========================================================
+
   dns_zone_link_list = flatten([
     for vnet in var.vnet_details : [
       for subnet in vnet.subnet_details : [
@@ -45,9 +71,6 @@ locals {
             vnet_name     = link.vnet_name
             vnet_location = link.vnet_location
             vnet_instance = link.vnet_instance
-
-            dns_location = vnet.location
-            dns_instance = vnet.instance
           }
         ]
       ]
