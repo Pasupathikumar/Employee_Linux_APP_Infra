@@ -33,17 +33,16 @@ locals {
     if subnet.subnet_deploy_flag
   }
 
+    # =========================================================
+  # PRIVATE DNS ZONES
+  # =========================================================
+
   dns_zone_list = flatten([
     for vnet in var.vnet_details : [
       for subnet in vnet.subnet_details : [
         for dns in subnet.dns_zone_details : {
           dns_deploy_flag = dns.dns_deploy_flag
-          dns_zone_name = dns.dns_zone_name
-          dns_zone_link_name = dns.dns_zone_link_name
-          subnet_name = subnet.subnet_name
-          vnet_name = vnet.vnet_name
-          location = vnet.location
-          instance = vnet.instance
+          dns_zone_name   = dns.dns_zone_name
         }
       ]
     ]
@@ -51,8 +50,37 @@ locals {
 
   dns_zone_details = {
     for dns in local.dns_zone_list :
-    "${dns.dns_zone_name}-${var.environment}-${var.project}-${dns.location}-${dns.instance}" => dns
+    dns.dns_zone_name => dns
     if dns.dns_deploy_flag
+  }
+
+
+  # =========================================================
+  # PRIVATE DNS ZONE VNET LINKS
+  # =========================================================
+
+  dns_zone_link_list = flatten([
+    for vnet in var.vnet_details : [
+      for subnet in vnet.subnet_details : [
+        for dns in subnet.dns_zone_details : [
+          for link in dns.vnet_links : {
+            dns_deploy_flag = dns.dns_deploy_flag
+            dns_zone_name   = dns.dns_zone_name
+
+            link_name     = link.link_name
+            vnet_name     = link.vnet_name
+            vnet_location = link.vnet_location
+            vnet_instance = link.vnet_instance
+          }
+        ]
+      ]
+    ]
+  ])
+
+  dns_zone_link_details = {
+    for link in local.dns_zone_link_list :
+    "${link.link_name}-${var.environment}-${var.project}" => link
+    if link.dns_deploy_flag
   }
 
   postgresql_server_list = flatten([
