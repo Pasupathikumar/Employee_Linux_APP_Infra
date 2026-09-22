@@ -34,31 +34,31 @@ locals {
   }
 
   dns_zone_link_list = flatten([
-  for vnet in var.vnet_details : [
-    for subnet in vnet.subnet_details : [
-      for dns in subnet.dns_zone_details : [
-        for link in dns.vnet_links : {
-          dns_deploy_flag = dns.dns_deploy_flag
-          dns_zone_name   = dns.dns_zone_name
+    for vnet in var.vnet_details : [
+      for subnet in vnet.subnet_details : [
+        for dns in subnet.dns_zone_details : [
+          for link in dns.vnet_links : {
+            dns_deploy_flag = dns.dns_deploy_flag
+            dns_zone_name   = dns.dns_zone_name
 
-          link_name     = link.link_name
-          vnet_name     = link.vnet_name
-          vnet_location = link.vnet_location
-          vnet_instance = link.vnet_instance
+            link_name     = link.link_name
+            vnet_name     = link.vnet_name
+            vnet_location = link.vnet_location
+            vnet_instance = link.vnet_instance
 
-          dns_location = vnet.location
-          dns_instance = vnet.instance
-        }
+            dns_location = vnet.location
+            dns_instance = vnet.instance
+          }
+        ]
       ]
     ]
-  ]
-])
+  ])
 
-dns_zone_link_details = {
-  for link in local.dns_zone_link_list :
-  "${link.link_name}-${var.environment}-${var.project}" => link
-  if link.dns_deploy_flag
-}
+  dns_zone_link_details = {
+    for link in local.dns_zone_link_list :
+    "${link.link_name}-${var.environment}-${var.project}" => link
+    if link.dns_deploy_flag
+  }
 
   postgresql_server_list = flatten([
     for vnet in var.vnet_details : [
